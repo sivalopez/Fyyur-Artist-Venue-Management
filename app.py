@@ -32,7 +32,7 @@ migrate = Migrate(app, db)
 #----------------------------------------------------------------------------#
 
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -46,12 +46,12 @@ class Venue(db.Model):
     website = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean, default=True)
     seeking_description = db.Column(db.String)
-    artists = db.relationship('Artist', secondary='Show', backref=db.backref('venues', lazy=True))
+    artists = db.relationship('Artist', secondary='show', backref=db.backref('venues', lazy=True))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
@@ -69,11 +69,11 @@ class Artist(db.Model):
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
-    __tabelname__ = 'Show'
+    __tabelname__ = 'show'
 
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
-    start_time = db.Column(db.DateTime, default=db.func.now()) #default value did not set.
+    artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), primary_key=True)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), primary_key=True)
+    start_time = db.Column(db.DateTime, default=db.func.now()) #default value did not set with db.funct.now().
 
 #----------------------------------------------------------------------------#
 # Filters.
