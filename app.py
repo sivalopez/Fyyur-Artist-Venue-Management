@@ -36,14 +36,14 @@ class Venue(db.Model):
     __tablename__ = 'venue'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
+    name = db.Column(db.String(120), unique=True, nullable=False)
     city = db.Column(db.String(120), nullable=False)
-    state = db.Column(db.String(120))
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
+    state = db.Column(db.String(120), nullable=False)
+    address = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(120), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    genres = db.Column(postgresql.ARRAY(db.String(120)))
+    genres = db.Column(postgresql.ARRAY(db.String(120)), nullable=False)
     website = db.Column(db.String(500))
     seeking_talent = db.Column(db.Boolean, default=True)
     seeking_description = db.Column(db.String)
@@ -64,11 +64,11 @@ class Artist(db.Model):
     __tablename__ = 'artist'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), nullable=False)
-    city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
+    name = db.Column(db.String(120), unique=True, nullable=False)
+    city = db.Column(db.String(120), nullable=False)
+    state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120))
-    genres = db.Column(postgresql.ARRAY(db.String(120)))
+    genres = db.Column(postgresql.ARRAY(db.String(120)), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(500))
@@ -83,7 +83,7 @@ class Show(db.Model):
 
     artist_id = db.Column(db.Integer, db.ForeignKey('artist.id'), primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), primary_key=True)
-    start_time = db.Column(db.DateTime, default=db.func.now()) #default value did not set with db.funct.now().
+    start_time = db.Column(db.DateTime, default=db.func.now())
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -266,7 +266,7 @@ def create_venue_submission():
 
     data['venue_name'] = name
 
-    # TODO: insert form data as a new Venue record in the db, instead
+    # insert form data as a new Venue record in the db, instead
     venue = Venue(name=name,city=city, state=state, address=address, phone=phone, \
       genres=genres, website=website, image_link=image_link, facebook_link=facebook_link, \
       seeking_talent=seeking_talent, seeking_description=seeking_description)
@@ -276,7 +276,7 @@ def create_venue_submission():
     db.session.add(venue)
     db.session.commit()
 
-    # TODO: modify data to be the data object returned from db insertion
+    # modify data to be the data object returned from db insertion
     data['venue_id'] = venue.id
 
   except:
@@ -287,7 +287,7 @@ def create_venue_submission():
     db.session.close()
 
   if error:
-    # TODO: on unsuccessful db insert, flash an error instead.
+    # On unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
     flash('An error occurred. Venue \'' + data['venue_name'] + '\' could not be listed.')
@@ -481,7 +481,15 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
+  name = request.form['name']
+  city = request.form['city']
+  state = request.form['state']
+  phone = request.form.get('phone','')
+  
+  # TODO: insert form data as a new Artist record in the db, instead
+  artist = Artist()
+  print(artist)
+
   # TODO: modify data to be the data object returned from db insertion
 
   # on successful db insert, flash success

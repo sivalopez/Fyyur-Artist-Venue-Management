@@ -1,7 +1,33 @@
+import enum
 from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, AnyOf, URL
+
+# Siva TODO: Use Genre enum to validate form field. 
+# class Genre(enum.Enum):
+#     Alternative = 'Alternative'
+#     Blues = 'Blues'
+#     Classical = 'Classical'
+#     Country = 'Country'
+#     Electronic = 'Electronic'
+#     Folk = 'Folk'
+#     Funk = 'Funk'
+#     Hip_Hop = 'Hip-Hop'
+#     Heavy_Metal = 'Heavy Metal'
+#     Instrumental = 'Instrumental'
+#     Jazz = 'Jazz'
+#     Musical_Theatre = 'Musical Theatre'
+#     Pop = 'Pop'
+#     Punk = 'Punk'
+#     R_and_B = 'R&B'
+#     Reggae = 'Reggae'
+#     Rock_n_Roll = 'Rock n Roll'
+#     Soul = 'Soul'
+#     Other = 'Other'
+
+#     def __str__(self):
+#         return str(self.value)
 
 class ShowForm(Form):
     artist_id = StringField(
@@ -86,7 +112,7 @@ class VenueForm(Form):
         'phone'
     )
     image_link = StringField(
-        'image_link'
+        'image_link', validators=[URL()]
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
