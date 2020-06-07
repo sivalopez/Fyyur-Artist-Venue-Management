@@ -248,6 +248,7 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   error = False
+  data = {}
   try:
     name = request.form['name']
     city = request.form['city']
@@ -258,8 +259,12 @@ def create_venue_submission():
     website = request.form['website']
     image_link = request.form['image_link']
     facebook_link = request.form['facebook_link']
-    seeking_talent = True if request.form['seeking_talent'] == 'y' else False
-    seeking_description = request.form['seeking_description']
+    # Setting default values when getting the request parameter value.
+    # Check value and convert to correct boolean value of True or False.
+    seeking_talent = True if request.form.get('seeking_talent', 'n') == 'y' else False
+    seeking_description = request.form.get('seeking_description', '')
+
+    data['venue_name'] = name
 
     # TODO: insert form data as a new Venue record in the db, instead
     venue = Venue(name=name,city=city, state=state, address=address, phone=phone, \
@@ -270,23 +275,25 @@ def create_venue_submission():
     # Insert into db and commit.
     db.session.add(venue)
     db.session.commit()
-    print("SL venue id is: [" + str(venue.id) + "]")
 
     # TODO: modify data to be the data object returned from db insertion
+    data['venue_id'] = venue.id
+
   except:
     error = True
     db.session.rollback()
     print(sys.exc_info())
   finally:
     db.session.close()
+
   if error:
-    flash('ERROR: Venue \'' + request.form['name'] + '\' could not be listed.')
-  else:
-    # on successful db insert, flash success
-    flash('Venue \'' + request.form['name'] + '\' was successfully listed!')
     # TODO: on unsuccessful db insert, flash an error instead.
     # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
     # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+    flash('An error occurred. Venue \'' + data['venue_name'] + '\' could not be listed.')
+  else:
+    # on successful db insert, flash success
+    flash('Venue \'' + data['venue_name'] + '\' was successfully listed!')
 
   return render_template('pages/home.html')
 
