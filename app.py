@@ -14,6 +14,8 @@ from logging import Formatter, FileHandler
 from flask_wtf import Form
 from forms import *
 from sqlalchemy.dialects import postgresql
+from sqlalchemy import func, DateTime
+from datetime import datetime
 import sys
 
 #----------------------------------------------------------------------------#
@@ -55,7 +57,7 @@ class Venue(db.Model):
         f', state: {self.state}, address: {self.address}, phone: {self.phone}'
         f', image_link: {self.image_link}, facebook_link: {self.facebook_link}'
         f', genres: {self.genres}, website: {self.website}, seeking_talent: {self.seeking_talent}'
-        f', seeking_description: {self.seeking_description}>'
+        f', seeking_description: {self.seeking_description}>\n'
       )
 
 class Artist(db.Model):
@@ -90,6 +92,11 @@ class Show(db.Model):
     venue_id = db.Column(db.Integer, db.ForeignKey('venue.id'), primary_key=True)
     start_time = db.Column(db.DateTime, default=db.func.now())
 
+    def __repr__(self):
+      return (
+        f'<Show artist_id: {self.artist_id}, venue_id: {self.venue_id}, start_time: {self.start_time}>'
+      )
+
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -120,28 +127,62 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-  return render_template('pages/venues.html', areas=data);
+  current_time = datetime.now()
+  
+  freshData = []
+  try:
+    cityStateGroup = Venue.query.with_entities(Venue.id, Venue.city, Venue.state).distinct(Venue.city, Venue.state).order_by(Venue.state, Venue.city).all()
+
+    for area in cityStateGroup:
+      venues = []
+      areaVenues = Venue.query.filter_by(state=area.state).filter_by(city=area.city).all()
+      for venue in areaVenues:
+        num_upcoming_shows = Show.query.with_entities(func.count(Show.venue_id).label('disco')).filter_by(venue_id=area.id).filter(Show.start_time>current_time).first()
+
+        venueData = {
+          "id": venue.id,
+          "name": venue.name,
+          "num_upcoming_shows": num_upcoming_shows[0]
+        }
+        venues.append(venueData)
+
+      areaVenue = {
+        "city": area.city,
+        "state": area.state,
+        "venues": venues
+      }
+      freshData.append(areaVenue)
+    
+  except:
+    db.session.rollback()
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+
+  # print('----siva----')
+  # print(freshData)
+  # data=[{
+  #   "city": "San Francisco",
+  #   "state": "CA",
+  #   "venues": [{
+  #     "id": 1,
+  #     "name": "The Musical Hop",
+  #     "num_upcoming_shows": 0,
+  #   }, {
+  #     "id": 3,
+  #     "name": "Park Square Live Music & Coffee",
+  #     "num_upcoming_shows": 1,
+  #   }]
+  # }, {
+  #   "city": "New York",
+  #   "state": "NY",
+  #   "venues": [{
+  #     "id": 2,
+  #     "name": "The Dueling Pianos Bar",
+  #     "num_upcoming_shows": 0,
+  #   }]
+  # }]
+  return render_template('pages/venues.html', areas=freshData);
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -584,13 +625,33 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
+  error = False
+  try:
+    artist_id = request.form.get('artist_id')
+    venue_id = request.form.get('venue_id')
+    start_time = request.form.get('start_time')
 
-  # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+    show = Show(artist_id=artist_id, venue_id=venue_id, start_time=start_time)
+    print("SL printing show: " + str(show))
+    # TODO: insert form data as a new Show record in the db, instead
+    db.session.add(show)
+    db.session.commit()
+  except:
+    error = True
+    db.session.rollback()
+    print(sys.exc_info())
+  finally:
+    db.session.close()
+
+  if error:
+    # TODO: on unsuccessful db insert, flash an error instead.
+    # e.g., flash('An error occurred. Show could not be listed.')
+    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+    flash('An error occurred. Show could not be listed.')
+  else:
+    # on successful db insert, flash success
+    flash('Show was successfully listed!')
+
   return render_template('pages/home.html')
 
 @app.errorhandler(404)

@@ -1,40 +1,18 @@
-import enum
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, TextAreaField
-from wtforms.validators import DataRequired, AnyOf, URL
-
-# Siva TODO: Use Genre enum to validate form field. 
-# class Genre(enum.Enum):
-#     Alternative = 'Alternative'
-#     Blues = 'Blues'
-#     Classical = 'Classical'
-#     Country = 'Country'
-#     Electronic = 'Electronic'
-#     Folk = 'Folk'
-#     Funk = 'Funk'
-#     Hip_Hop = 'Hip-Hop'
-#     Heavy_Metal = 'Heavy Metal'
-#     Instrumental = 'Instrumental'
-#     Jazz = 'Jazz'
-#     Musical_Theatre = 'Musical Theatre'
-#     Pop = 'Pop'
-#     Punk = 'Punk'
-#     R_and_B = 'R&B'
-#     Reggae = 'Reggae'
-#     Rock_n_Roll = 'Rock n Roll'
-#     Soul = 'Soul'
-#     Other = 'Other'
-
-#     def __str__(self):
-#         return str(self.value)
+from wtforms import DecimalField, IntegerField, StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, TextAreaField
+from wtforms.validators import DataRequired, AnyOf, URL, NumberRange, Length, InputRequired
 
 class ShowForm(Form):
+    #def always_invalid(form, field):
+    #    raise ValidationError('SL Invalid Data.')
     artist_id = StringField(
-        'artist_id'
+        # 'artist_id', validators=[DataRequired(), NumberRange(min=1, max=50, message='Not a valid artist id.')]
+        'artist_id', validators=[DataRequired(message='a new message')]
     )
     venue_id = StringField(
-        'venue_id'
+        # 'venue_id', validators=[DataRequired(), NumberRange(min=1, max=50, message='Not a valid venue id,')]
+        'venue_id', validators=[DataRequired(message='another message')]
     )
     start_time = DateTimeField(
         'start_time',
