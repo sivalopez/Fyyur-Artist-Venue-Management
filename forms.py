@@ -223,7 +223,7 @@ class ArtistForm(Form):
             ('Rock n Roll', 'Rock n Roll'),
             ('Soul', 'Soul'),
             ('Other', 'Other'),
-        ]
+        ],
     )
     website = StringField(
         'website', validators=[URL()]
@@ -238,5 +238,3 @@ class ArtistForm(Form):
     seeking_description = TextAreaField(
         'seeking_description', validators=[]
     )
-
-# TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
