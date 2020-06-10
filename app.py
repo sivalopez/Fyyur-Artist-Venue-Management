@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, abort, jsonify
 from flask_migrate import Migrate
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
@@ -355,12 +355,25 @@ def create_venue_submission():
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
+  # Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+  error = False
+  try:
+    venue = Venue.query.filter_by(id=venue_id).first()
+    db.session.delete(venue)
+    db.session.commit()
+  except:
+    error = True
+    print(sys.exc_info())
+    db.session.rollback()
+  finally:
+    db.session.close()
+  
+  if error:
+    flash('An error occurred. Could not delete venue: ' + str(venue_id))
+    abort(400)
 
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  return render_template('pages/home.html')
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -389,9 +402,8 @@ def artists():
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
   # Implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
   try:
+    # Getting current time to use in upcoming shows query.
     current_time = datetime.now()
     search_term = request.form.get('search_term','')
     artists = Artist.query.filter(Artist.name.ilike('%' + search_term + '%')).all()
@@ -401,8 +413,8 @@ def search_artists():
     if artists:
       data = []
       for artist in artists:
-        num_upcoming_shows = len(Artist.query.join(Show).with_entities(Artist.id, Show.start_time)\
-          .filter(Show.artist_id==artist.id).filter(Show.start_time>current_time).all())
+        num_upcoming_shows = len(Show.query.filter_by(artist_id=artist.id).filter(Show.start_time>current_time).all())
+
         data.append({
           "id": artist.id,
           "name": artist.name,
@@ -412,6 +424,7 @@ def search_artists():
         "count": len(artists),
         "data": data
       }
+
     else:
       error = True
   except:
@@ -687,7 +700,7 @@ def create_artist_submission():
     artist = Artist(name=name, city=city, state=state, phone=phone, genres=genres, \
       image_link=image_link, facebook_link=facebook_link, website=website, \
         seeking_venue=seeking_venue, seeking_description=seeking_description)
-    print(artist)
+
     data['name'] = name
 
     db.session.add(artist)
@@ -760,8 +773,8 @@ def create_show_submission():
     start_time = request.form.get('start_time')
 
     show = Show(artist_id=artist_id, venue_id=venue_id, start_time=start_time)
-    print("SL printing show: " + str(show))
-    # TODO: insert form data as a new Show record in the db, instead
+ 
+    # Insert form data as a new Show record in the db
     db.session.add(show)
     db.session.commit()
   except:
@@ -773,8 +786,6 @@ def create_show_submission():
 
   if error:
     # On unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Show could not be listed.')
-    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
     flash('An error occurred. Show could not be listed.')
   else:
     # on successful db insert, flash success

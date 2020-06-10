@@ -5,6 +5,7 @@
 	<div class="col-sm-6">
 		<h1 class="monospace">
 			{{ venue.name }}
+			<button class="delete-venue" data-id={{ venue.id }}>&cross;</button>
 		</h1>
 		<p class="subtitle">
 			ID: {{ venue.id }}
@@ -74,6 +75,18 @@
 		{% endfor %}
 	</div>
 </section>
+<script>
+	const deleteVenue = document.querySelector('.delete-venue');
 
+	deleteVenue.onclick = function(e) {
+		fetch('/venues/'+ deleteVenue.dataset.id, {
+			method: 'DELETE'
+		}).then(function() {
+			window.location.href = '/venues';
+		}).catch(function(e) {
+			console.log("Error", e)
+		});
+	}
+</script>
 {% endblock %}
 
