@@ -557,12 +557,18 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
+  # Take values from the form submitted, and update existing
   # artist record with ID <artist_id> using the new attributes
   error = False
   try:
     artist = Artist.query.filter_by(id=artist_id).first()
     if artist:
+      form = ArtistForm(request.form)
+      validateForm = form.validate_on_submit()
+      if not validateForm:
+        flash(f"An error occurred: {form.errors}")
+        return redirect(url_for('edit_artist', artist_id=artist_id))
+
       name = request.form['name']
       city = request.form['city']
       state = request.form['state']
@@ -636,6 +642,12 @@ def edit_venue_submission(venue_id):
 
   if venue:
     try:
+      form = VenueForm(request.form)
+      validateForm = form.validate_on_submit()
+      if not validateForm:
+        flash(f"An error occurred: {form.errors}")
+        return redirect(url_for('show_venue', venue_id=venue_id))
+
       name = request.form['name']
       city = request.form['city']
       state = request.form['state']
@@ -676,6 +688,9 @@ def edit_venue_submission(venue_id):
 
   if error:
     flash('Could not update venue Id: ' + str(venue_id))
+  else:
+    flash('Successfully updated venue Id: ' + str(venue_id))
+
   return redirect(url_for('show_venue', venue_id=venue_id))
 
 #  Create Artist
@@ -786,7 +801,7 @@ def create_show_submission():
     if not validateForm:
       flash(f"An error occurred: {form.errors}")
       return redirect(url_for('index'))
-      
+
     artist_id = request.form.get('artist_id')
     venue_id = request.form.get('venue_id')
     start_time = request.form.get('start_time')
