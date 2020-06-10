@@ -8,18 +8,6 @@
         <label for="artist_id">Artist ID</label>
         <small>ID can be found on the Artist's Page</small>
         {{ form.artist_id(class_ = 'form-control', autofocus = true) }}
-<!--
-       {% if form.artist_id.errors %}
-          <ul class="errors">
-            <li>artist_id has errors</li>
-            {% for error in form.artist_id.errors %}
-            <li>{{ error }}</li>
-            {% endfor %}
-          </ul>
-        {% else %}
-          <ul><li>no errors</li></ul>
-        {% endif %}
-        -->
       </div>
       <div class="form-group">
         <label for="venue_id">Venue ID</label>
@@ -31,6 +19,7 @@
           {{ form.start_time(class_ = 'form-control', placeholder='YYYY-MM-DD HH:MM', autofocus = true) }}
         </div>
       <input type="submit" value="Create Show" class="btn btn-primary btn-lg btn-block">
+      {{ form.csrf_token }}
     </form>
   </div>
 {% endblock %}

@@ -306,8 +306,15 @@ def create_venue_form():
 def create_venue_submission():
   error = False
   data = {}
+  venue_name = request.form['name']
 
   try:
+    form = VenueForm(request.form)
+    validateForm = form.validate_on_submit()
+    if not validateForm:
+      flash(f"An error occurred: {form.errors}")
+      return redirect(url_for('index'))
+
     name = request.form['name']
     city = request.form['city']
     state = request.form['state']
@@ -346,7 +353,7 @@ def create_venue_submission():
 
   if error:
     # On unsuccessful db insert, flash an error instead.
-    flash('An error occurred. Venue \'' + data['venue_name'] + '\' could not be listed.')
+    flash('An error occurred. Venue \'' + venue_name + '\' could not be listed.')
   else:
     # on successful db insert, flash success
     flash('Venue \'' + data['venue_name'] + '\' was successfully listed!')
@@ -685,6 +692,12 @@ def create_artist_submission():
   error = False
   data = {}
   try:
+    form = ArtistForm(request.form)
+    validateForm = form.validate_on_submit()
+    if not validateForm:
+      flash(f"An error occurred: {form.errors}")
+      return redirect(url_for('index'))
+
     name = request.form['name']
     city = request.form['city']
     state = request.form['state']
@@ -768,6 +781,12 @@ def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
   error = False
   try:
+    form = ShowForm(request.form)
+    validateForm = form.validate_on_submit()
+    if not validateForm:
+      flash(f"An error occurred: {form.errors}")
+      return redirect(url_for('index'))
+      
     artist_id = request.form.get('artist_id')
     venue_id = request.form.get('venue_id')
     start_time = request.form.get('start_time')
